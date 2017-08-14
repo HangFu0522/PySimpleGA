@@ -2,7 +2,7 @@ import math
 import random
 
 class individual():
-    def __init__(self,arg_gene,arg_fun,arg_chromlength,arg_pMutate):
+    def __init__(self,arg_gene,arg_chromlength,arg_pMutate):
         """
         :param arg_gene: 基因编码
         :param arg_chromlength: 基因片段的长度
@@ -11,11 +11,19 @@ class individual():
         self.gene=arg_gene
         self.chromlength = arg_chromlength
         self.pMutate = arg_pMutate
-        self.fun=arg_fun
 
-    @property
+    def b2d(self,bin):
+        t = 0
+        for i in range(len(bin)):
+            t += bin[i] * math.pow(2, i)
+        return t
+
+    def objfun(self,x_list):
+        x=self.b2d(x_list)*10/1023
+        return 100 - (x - 2) * (x - 7)
+
     def fun_value(self):
-        return self.fun(self.gene)
+        return self.objfun(self.gene)
 
     @property
     def get_gene(self):
@@ -27,7 +35,7 @@ class individual():
 
     def mutate(self):
         if random.random()<self.pMutate:
-            point=random.randint(0,self.chromlength)
+            point=random.randint(0,self.chromlength-1)
             if self.gene[point]==0:
                 self.gene[point] =1
             else:
@@ -36,7 +44,7 @@ class individual():
 
 
 class Population():
-    def __init__(self,arg_number,arg_fun,arg_pCross=0.6,arg_chromlength=10,arg_pMutate=0.001):
+    def __init__(self,arg_number,arg_pCross=0.6,arg_chromlength=10,arg_pMutate=0.001):
         """
         :param arg_number: 初始群体数目
         :param arg_pCross: 交换率
@@ -49,21 +57,22 @@ class Population():
         self.pMutate = arg_pMutate
         self.fun_value=[]
 
-        self.init_gene=[i%2 for i in range(self.number)]
-        self.individual_list=[individual(self.init_gene,arg_fun,self.chromlength,self.pMutate) for i in range(self.number)]
+        self.init_gene=[random.randint(0, 1) for i in range(self.chromlength)]
+        self.init_gene
+        self.individual_list=[individual(self.init_gene,self.chromlength,self.pMutate) for i in range(self.number)]
 
 
     def __exchange__(self, indiv_1,indiv_2):
         exchange_point=random.randint(0, self.chromlength)
-        gene1 = indiv_1.get_gene()
-        gene2 = indiv_2.get_gene()
-        indiv_1.set_gene(gene1[0:exchange_point] + gene2[exchange_point:self.chromlength])
-        indiv_2.set_gene(gene2[0:exchange_point] + gene1[exchange_point:self.chromlength])
+        gene1 = indiv_1.get_gene
+        gene2 = indiv_2.get_gene
+        indiv_1.gene=gene1[0:exchange_point] + gene2[exchange_point:self.chromlength]
+        indiv_2.gene=gene2[0:exchange_point] + gene1[exchange_point:self.chromlength]
 
     def cross(self):
         for i in range(self.number):
             if random.random()<self.pCross:
-                __exchange__(self.individual_list[i], self.individual_list[random.randint(0, self.number)])
+                self.__exchange__(self.individual_list[i],self.individual_list[random.randint(0, self.number-1)])
 
     def mutate(self):
         for i in range(self.number):
@@ -71,8 +80,7 @@ class Population():
 
     def __get_pfitvalue__(self):
         self.fun_value=[self.individual_list[i].fun_value() for i in range(self.number)]
-        min_fun_value=min(self.fun_value)
-        fixvalue=[(self.fun_value[i]-fixvalue) for i in range(self.number)]
+        fixvalue=[self.fun_value[i] for i in range(self.number)]
         total=sum(fixvalue)
         return [fixvalue[i]/total for i in range(self.number)]
 
@@ -84,8 +92,8 @@ class Population():
                 arg_fitvalue[i] = arg_fitvalue[i] + arg_fitvalue[i - 1]
 
     def select(self):
-        p_fitvalue=__get_pfitvalue__();
-        __cumsum__(p_fitvalue)
+        p_fitvalue=self.__get_pfitvalue__()
+        self.__cumsum__(p_fitvalue)
 
         p_select=[random.random() for i in range(self.number)]
         p_select.sort()
@@ -96,10 +104,10 @@ class Population():
 
         while(select_index<self.number):
             if p_select[select_index]<p_fitvalue[new_indiv_index]:
-                new_indiv_index+=1
-            else:
                 new_individual_list.append(self.individual_list[new_indiv_index])
                 select_index+=1
+            else:
+                new_indiv_index+=1
         self.individual_list=new_individual_list
 
     @property
@@ -112,19 +120,15 @@ class Population():
                 bestfunvalue=self.fun_value[i]
                 bestone=self.individual_list[i]
 
-        return bestfunvalue,bestone
-
-
-
+        return bestfunvalue
 
 if __name__=="__main__":
 
-    def objfun(x):
-        return 10 - (x - 2) * (x - 7)
+    pop=Population(500)
 
-
-    pop=Population(50,objfun)
-    for i in range(100):
+    for i in range(1000):
         pop.select()
         pop.cross()
         pop.mutate()
+    bestfunvalue=pop.get_best
+    print(bestfunvalue)
