@@ -2,7 +2,6 @@ import math
 import random
 import copy
 
-
 def cumsum(arg_list):
     for i in range(len(arg_list)):
         if i == 0:
@@ -15,19 +14,22 @@ def decode(bin_list):
     t = 0
     for index in range(len(bin_list)):
         t += bin_list[index] * math.pow(2, index)
-    return t * 5 / 1023
+    return t * 4 / 1023+4
 
 
 def my_fit(x):
-    #return 10 * math.sin(5 * x) + 7 * math.cos(4 * x)
-    return 5-(x-1)*(x-5)
+    return 10 * math.sin(5 * x) + 7 * math.cos(4 * x)+4*math.sin(3*x)
+
 
 def get_pfitvalue(fun_value):
     temp = 0
     fixvalue = []
     number = len(fun_value)
+    threshold = (max(fun_value) + min(fun_value)) / 3
+    if threshold < 0:
+        threshold = 0
     for i in range(number):
-        if fun_value[i] > 0:
+        if fun_value[i] > threshold:
             temp = fun_value[i]
         else:
             temp = 0
@@ -56,8 +58,8 @@ class individual:
         :param arg_pMutate: 基因突变的概率
         """
         self.chromlength = arg_chromlength
-        self.gene = [random.randint(0, 1) for i in range(self.chromlength)]
-        # self.gene=[0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+        #self.gene = [random.randint(0, 1) for i in range(self.chromlength)]
+        self.gene=[0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
         self.pMutate = arg_pMutate
 
     def mutate(self):
@@ -128,21 +130,15 @@ class Population:
         self.best_index = self.fun_value.index(self.bestfunvalue)
         self.bestgene = self.individual_list[self.best_index].gene[:]
 
+
 if __name__ == "__main__":
 
     pop = Population(50)
-    bestgene = []
-    best_value = []
-    for i in range(100):
+    for i in range(2000):
         pop.select()
-
         pop.best()
-        bestgene.append(pop.bestgene[:])
-        best_value.append(pop.bestfunvalue)
         pop.cross()
         pop.mutate()
 
-    best_index = best_value.index(max(best_value))
-    best = bestgene[best_index]
-
+    best = pop.bestgene[:]
     print(decode(best))
